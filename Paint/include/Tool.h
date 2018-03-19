@@ -1,0 +1,8 @@
+#ifndef PAINT_TOOL_H
+#define PAINT_TOOL_H
+
+enum Tool {
+    FOREGROUND, BACKGROUND, LINE, CIRCLE, RECT, RECTFULL
+};
+
+#endif //PAINT_TOOL_H
