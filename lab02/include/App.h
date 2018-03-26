@@ -25,6 +25,7 @@ private:
     View *m_view;
     sf::RenderWindow *m_window;
     bool moving = false;
+    bool pressed = false;
 };
 
 

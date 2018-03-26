@@ -2,62 +2,81 @@
 #define LAB02_CIRCLE_H
 
 #include <SFML/Graphics.hpp>
+#include "View.h"
+#include <cmath>
 
-class Circle : public sf::Drawable {
+struct PolarCoord {
+    float radius;
+    float phi;
+};
+
+class Circle {
 public:
-    Circle(float radius)
+    Circle(float radius, PolarCoord *data)
             : m_radius(radius),
               m_width(static_cast<const unsigned int>(radius * 2)),
-              m_height(static_cast<const unsigned int>(radius * 2)) {
+              m_height(static_cast<const unsigned int>(radius * 2)),
+              m_data(data) {
         m_texture.create(m_width, m_height);
-        sprite.setTexture(m_texture);
+        m_sprite.setTexture(m_texture);
 
         pixels = new sf::Uint8[m_width * m_height * 4];
     }
 
-    ~Circle() {
+    virtual ~Circle() {
         delete[] pixels;
     }
 
     void setPosition(int x, int y) {
-        sprite.setPosition(x, y);
+        m_sprite.setPosition(x, y);
     }
 
     void update(float percent) {
-        for (unsigned int x = 0; x < m_width; ++x) {
-            for (unsigned int y = 0; y < m_height; ++y) {
-                float x2 = x - m_width / 2.0f;
-                float y2 = y - m_height / 2.0f;
-                float r = sqrtf(x2 * x2 + y2 * y2);
-
-                if (r <= m_radius) {
-                    double phi = std::atan2(y2, -x2) * 0.5 / M_PI + 0.5;
-
-//                    sf::Color color = calc(phi, r / m_radius, percent);
-
-//                    color_pixel(x, y, color.r, color.g, color.b);
-                }
+        for (unsigned i = 0; i < m_width * m_height; ++i) {
+            if (!std::isnan(m_data[i].radius)) {
+                sf::Color color = calc(m_data[i].phi, m_data[i].radius,
+                                       percent);
+                color_pixel(i, color.r, color.g, color.b);
             }
         }
 
         m_texture.update(pixels);
     }
 
+    static void initializeData(PolarCoord *pCoord, size_t size) {
+        float radius = size / 2.f;
+        for (unsigned int x = 0; x < size; ++x) {
+            for (unsigned int y = 0; y < size; ++y) {
+                float x2 = x - size / 2.0f;
+                float y2 = y - size / 2.0f;
+                float r = sqrtf(x2 * x2 + y2 * y2);
+
+                if (r <= radius) {
+                    pCoord[y * size + x].radius = r / radius;
+                    pCoord[y * size + x].phi =
+                            std::atan2(y2, -x2) * 0.5f / M_PI + 0.5f;
+                } else {
+                    pCoord[y * size +
+                           x].radius = nanf("");
+                }
+            }
+        }
+    };
+
+    void draw(sf::RenderTarget &target) const {
+        target.draw(m_sprite);
+    }
+
 protected:
     virtual sf::Color calc(float phi, float r, float percent) = 0;
 
     void
-    draw(sf::RenderTarget &target, sf::RenderStates) const override {
-        target.draw(sprite);
-    }
-
-    void
-    color_pixel(unsigned int x, unsigned int y, sf::Uint8 r, sf::Uint8 g,
+    color_pixel(unsigned int i, sf::Uint8 r, sf::Uint8 g,
                 sf::Uint8 b) {
-        pixels[4 * (y * m_width + x) + 0] = r;
-        pixels[4 * (y * m_width + x) + 1] = g;
-        pixels[4 * (y * m_width + x) + 2] = b;
-        pixels[4 * (y * m_width + x) + 3] = 255;
+        pixels[4 * i + 0] = r;
+        pixels[4 * i + 1] = g;
+        pixels[4 * i + 2] = b;
+        pixels[4 * i + 3] = 255;
     }
 
     const float m_radius;
@@ -65,7 +84,8 @@ protected:
     const unsigned int m_height;
     sf::Uint8 *pixels;
     sf::Texture m_texture;
-    sf::Sprite sprite;
+    sf::Sprite m_sprite;
+    PolarCoord *m_data;
 };
 
 #endif //LAB02_CIRCLE_H

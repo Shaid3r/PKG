@@ -24,7 +24,10 @@ App &App::GetApp() {
 void App::run() {
     while (m_window->isOpen()) {
         processEvents();
-
+        if (moving && m_model->isChanged()) {
+            m_view->update();
+            moving = false;
+        }
         m_view->draw();
     }
 }
@@ -35,16 +38,24 @@ void App::processEvents() {
         if (event.type == sf::Event::Closed)
             m_window->close();
         if (event.type == sf::Event::MouseButtonPressed){
-            moving = true;
-            m_model->set_line_pos(event.mouseButton.x, event.mouseButton.y);
-            m_view->update();
+            int x = event.mouseButton.x;
+            int y = event.mouseButton.y;
+            if (x >= 678 && x <= 732 && y >= 50 && y <= 320){
+                moving = true;
+                pressed = true;
+                m_model->set_line_pos(event.mouseButton.y);
+            }
         }
-        if (event.type == sf::Event::MouseMoved && moving) {
-            m_model->set_line_pos(event.mouseMove.x, event.mouseMove.y);
-//            m_view->update();
+        if (event.type == sf::Event::MouseMoved && pressed) {
+            int x = event.mouseMove.x;
+            int y = event.mouseMove.y;
+            if (x >= 678 && x <= 732 && y >= 50 && y <= 320) {
+                moving = true;
+                m_model->set_line_pos(event.mouseMove.y);
+            }
         }
         if (event.type == sf::Event::MouseButtonReleased) {
-            moving = false;
+            pressed = false;
         }
     }
 }

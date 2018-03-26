@@ -1,14 +1,12 @@
 #ifndef LAB02_RGBCIRCLE_H
 #define LAB02_RGBCIRCLE_H
 
-#include <SFML/Graphics.hpp>
 #include <cmath>
-#include <iostream>
 #include "Circle.h"
 
 class RGBCircle : public Circle {
 public:
-    RGBCircle(float radius) : Circle(radius) {}
+    RGBCircle(float radius, PolarCoord* data) : Circle(radius, data) {}
 
 private:
     sf::Color calc(float phi, float r, float percent) override {

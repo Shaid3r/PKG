@@ -1,12 +1,12 @@
 #ifndef LAB02_CMYCIRCLE_H
 #define LAB02_CMYCIRCLE_H
 
-#include "Circle.h"
 #include <cmath>
+#include "Circle.h"
 
 class CMYCircle : public Circle {
 public:
-    CMYCircle(float radius = 0) : Circle(radius) {}
+    CMYCircle(float radius, PolarCoord* data) : Circle(radius, data) {}
 
 private:
     sf::Color calc(float phi, float r, float percent) override {

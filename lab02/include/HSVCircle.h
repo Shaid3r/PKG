@@ -1,12 +1,12 @@
 #ifndef LAB02_HSVCIRCLE_H
 #define LAB02_HSVCIRCLE_H
 
-#include "Circle.h"
 #include <cmath>
+#include "Circle.h"
 
 class HSVCircle : public Circle {
 public:
-    HSVCircle(float radius = 0) : Circle(radius) {}
+    HSVCircle(float radius, PolarCoord* data) : Circle(radius, data) {}
 
 private:
     sf::Color calc(float phi, float r, float percent) override {

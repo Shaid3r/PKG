@@ -2,15 +2,15 @@
 #define LAB02_VIEW_H
 
 #include <SFML/Graphics.hpp>
-#include <RGBCircle.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include "font.h"
 #include "Model.h"
 #include "HSLCircle.h"
 #include "HSVCircle.h"
 #include "CMYCircle.h"
+#include "RGBCircle.h"
+#include "font.h"
 
 class View {
 public:
@@ -34,13 +34,14 @@ public:
 
 
     ~View() {
+        if (m_precalculatedData) delete[] m_precalculatedData;
         for (int i = 0; i < NUM_OF_CIRCLES; ++i)
             delete m_circles[i];
     }
 
     void draw() {
-//        if (m_updated) {
-            ++m_frame_counter;
+        ++m_frame_counter;
+        if (m_updated) {
             m_updated = false;
             m_window->clear(sf::Color::White);
 
@@ -51,10 +52,10 @@ public:
             print_text();
 
             for (int i = 0; i < NUM_OF_CIRCLES; ++i)
-                m_window->draw(*m_circles[i]);
+                m_circles[i]->draw(*m_window);
 
             m_window->display();
-//        }
+        }
 
         if (clock.getElapsedTime().asSeconds() >= 1.0f) {
             m_fps = static_cast<unsigned int>(
@@ -68,7 +69,6 @@ public:
 
     void update() {
         m_updated = true;
-        std::cout << m_model->line_pos() << std::endl;
         move_line(m_model->line_pos());
         for (int i = 0; i < NUM_OF_CIRCLES; ++i)
             m_circles[i]->update(m_model->bar_percent());
@@ -78,15 +78,22 @@ private:
     void create_circles() {
         float radius = m_window->getSize().x * 0.16f;
         float padding = 45;
-        m_circles[0] = new HSLCircle(radius);
+
+        // Optymalisation
+        auto size = static_cast<size_t>(radius * 2);
+        m_precalculatedData = new PolarCoord[size * size];
+        Circle::initializeData(m_precalculatedData, size);
+
+        m_circles[0] = new HSLCircle(radius, m_precalculatedData);
         m_circles[0]->setPosition(padding, padding);
-        m_circles[1] = new HSVCircle(radius);
+        m_circles[1] = new HSVCircle(radius, m_precalculatedData);
         m_circles[1]->setPosition(2 * (radius + padding), padding);
-        m_circles[2] = new CMYCircle(radius);
+        m_circles[2] = new CMYCircle(radius, m_precalculatedData);
         m_circles[2]->setPosition(padding, 2 * (radius + padding));
-        m_circles[3] = new RGBCircle(radius);
+        m_circles[3] = new RGBCircle(radius, m_precalculatedData);
         m_circles[3]->setPosition(2 * (radius + padding),
                                   2 * (radius + padding));
+
     }
 
     void create_switcher() {
@@ -160,7 +167,7 @@ private:
         m_window->draw(text);
     }
 
-    static const int NUM_OF_CIRCLES = 4;
+    enum Config { NUM_OF_CIRCLES = 4 };
     Circle *m_circles[NUM_OF_CIRCLES];
     sf::VertexArray switcher;
     sf::VertexArray switcher_outline;
@@ -171,6 +178,7 @@ private:
     sf::Text text;
     sf::RenderWindow *m_window;
     Model *m_model;
+    PolarCoord *m_precalculatedData;
     unsigned int m_fps = 0, m_frame_counter = 0;
     bool m_updated;
 };

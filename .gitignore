@@ -1,7 +1,10 @@
 # Build artifacts
 build/
 bin/
+.vscode
 cmake-build-release/
+cmake-build-debug/
+*.zip
 
 # IDE files
 .idea/
