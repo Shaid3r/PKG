@@ -19,12 +19,10 @@ private:
     Matrix RotateMatrix(double alpha);
     Matrix TranslateMatrix(double x, double y);
     Matrix ScaleMatrix(double x, double y);
-    void DrawFunc1(wxDC *dc, int w, int h, const Matrix &matrix);
-    void DrawFunc2(wxDC *dc, int w, int h, const Matrix &matrix);
-    void DrawFunc3(wxDC *dc, int w, int h, const Matrix &matrix);
-    void text2d(wxDC *dc, double x, double y, double val, const Matrix &matrix);
+    void DrawFunc(wxDC *dc, int w, int h, const Matrix &matrix);
+    void textXY(wxDC *dc, double x, double y, double val, const Matrix &matrix);
 
-    double GetFunctionValue(double x); // zwraca wartosci rysowanej funkcji
+    double GetFunctionValue(double x) const; // zwraca wartosci rysowanej funkcji
 
     std::shared_ptr<ConfigClass> cfg;
     int x_step;         // liczba odcinkow z jakich bedzie sie skladal wykres

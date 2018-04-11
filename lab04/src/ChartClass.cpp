@@ -35,7 +35,7 @@ void ChartClass::Set_Range() {
 }
 
 
-double ChartClass::GetFunctionValue(double x) {
+double ChartClass::GetFunctionValue(double x) const {
     if (cfg->Get_F_type() == 1) return x * x;
     if (cfg->Get_F_type() == 2) return 0.5 * exp(4 * x - 3 * x * x);
     return x + sin(x * 4.0);
@@ -65,9 +65,9 @@ void ChartClass::Draw(wxDC *dc, int w, int h) {
     int height = h / 2 - 10;
 
     int moveX = -width + abs(cfg->Get_x0()) * 2 * width /
-                      (abs(cfg->Get_x1()) + abs(cfg->Get_x0()));
+                         (abs(cfg->Get_x1()) + abs(cfg->Get_x0()));
     int moveY = -height + abs(cfg->Get_y1()) * 2 * height /
-                       (abs(cfg->Get_y0()) + abs(cfg->Get_y1()));
+                          (abs(cfg->Get_y0()) + abs(cfg->Get_y1()));
 
     if (cfg->RotateScreenCenter()) {
         t = RotateMatrix(cfg->Get_Alpha() * M_PI / 180);
@@ -90,16 +90,16 @@ void ChartClass::Draw(wxDC *dc, int w, int h) {
     // ticks
     line2d(dc, cfg->Get_x_start() * width / 2, -5 / scaleY,
            cfg->Get_x_start() * width / 2, +5 / scaleY, t);
-    text2d(dc, cfg->Get_x_start() * width / 2 - 5, 15, cfg->Get_x_start() / 2,
+    textXY(dc, cfg->Get_x_start() * width / 2 - 5, 15, cfg->Get_x_start() / 2,
            t);
 
     line2d(dc, cfg->Get_x_stop() * width / 3, -5 / scaleY,
            cfg->Get_x_stop() * width / 3, +5 / scaleY, t);
-    text2d(dc, cfg->Get_x_stop() * width / 3 - 5, 15, cfg->Get_x_stop() / 3, t);
+    textXY(dc, cfg->Get_x_stop() * width / 3 - 5, 15, cfg->Get_x_stop() / 3, t);
 
     line2d(dc, cfg->Get_x_stop() * 2 * width / 3, -5 / scaleY,
            cfg->Get_x_stop() * 2 * width / 3, +5 / scaleY, t);
-    text2d(dc, cfg->Get_x_stop() * width * 2 / 3 - 5, 15,
+    textXY(dc, cfg->Get_x_stop() * width * 2 / 3 - 5, 15,
            cfg->Get_x_stop() * 2 / 3, t);
 
     // OX arrow
@@ -123,29 +123,18 @@ void ChartClass::Draw(wxDC *dc, int w, int h) {
     // ticks
     line2d(dc, -5 / scaleX, -Get_Y_min() * height / 2, 5 / scaleX,
            -Get_Y_min() * height / 2, t);
-    text2d(dc, 15, -Get_Y_min() * height / 2 - 10, Get_Y_min() / 2, t);
+    textXY(dc, 15, -Get_Y_min() * height / 2 - 10, Get_Y_min() / 2, t);
 
     line2d(dc, -5 / scaleX, -Get_Y_max() * height / 3, 5 / scaleX,
            -Get_Y_max() * height / 3, t);
-    text2d(dc, 15, -Get_Y_max() * height / 3 - 10, Get_Y_max() / 3, t);
+    textXY(dc, 15, -Get_Y_max() * height / 3 - 10, Get_Y_max() / 3, t);
 
     line2d(dc, -5 / scaleX, -Get_Y_max() * height * 2 / 3, 5 / scaleX,
            -Get_Y_max() * height * 2 / 3, t);
-    text2d(dc, 15, -Get_Y_max() * height * 2 / 3 - 10, Get_Y_max() * 2 / 3, t);
+    textXY(dc, 15, -Get_Y_max() * height * 2 / 3 - 10, Get_Y_max() * 2 / 3, t);
 
     dc->SetPen(wxPen(wxColour(0, 255, 0)));
-    switch (cfg->Get_F_type()) {
-        case 0:
-            DrawFunc1(dc, width, height, t);
-            break;
-        case 1:
-            DrawFunc2(dc, width, height, t);
-            break;
-        case 2:
-            DrawFunc3(dc, width, height, t);
-            break;
-    }
-
+    DrawFunc(dc, width, height, t);
 }
 
 void
@@ -202,51 +191,25 @@ Matrix ChartClass::ScaleMatrix(double x, double y) {
     return matrix;
 }
 
-void ChartClass::DrawFunc1(wxDC *dc, int w, int h, const Matrix &matrix) {
+void ChartClass::DrawFunc(wxDC *dc, int w, int h, const Matrix &matrix) {
     double value, nextValue;
     double dx = 0.05;
     double x = cfg->Get_x_start();
     while (x < cfg->Get_x_stop()) {
-        value = -(x + sin(4 * x));
-        nextValue = -((x + dx) + sin(4 * (x + dx)));
+        value = -GetFunctionValue(x);
+        nextValue = -GetFunctionValue(x + dx);
         line2d(dc, x * w, value * h, (x + dx) * w, nextValue * h, matrix);
         x += dx;
     }
 }
 
-void ChartClass::DrawFunc2(wxDC *dc, int w, int h,
-                           const Matrix &matrix) {
-    double value, nextValue;
-    double dx = 0.05;
-    double x = cfg->Get_x_start();
-    while (x < cfg->Get_x_stop()) {
-        value = -(x * x);
-        nextValue = -((x + dx) * (x + dx));
-        line2d(dc, x * w, value * h, (x + dx) * w, nextValue * h, matrix);
-        x += dx;
-    }
-}
-
-void ChartClass::DrawFunc3(wxDC *dc, int w, int h,
-                           const Matrix &matrix) {
-    double value, nextValue;
-    double dx = 0.05;
-    double x = cfg->Get_x_start();
-    while (x < cfg->Get_x_stop()) {
-        value = -0.5 * pow(M_E, 4 * x - 3 * x * x);
-        nextValue = -0.5 * pow(M_E, 4 * (x + dx) - 3 * (x + dx) * (x + dx));
-        line2d(dc, x * w, value * h, (x + dx) * w, nextValue * h, matrix);
-        x += dx;
-    }
-}
-
-void ChartClass::text2d(wxDC *dc, double x, double y, double val,
+void ChartClass::textXY(wxDC *dc, double x, double y, double val,
                         const Matrix &matrix) {
-    Vector v, v2;
+    Vector v;
     v.Set(x, y);
-    v2 = matrix * v;
+    v = matrix * v;
     std::stringstream s;
     s << std::setprecision(2) << val;
-    dc->DrawRotatedText(s.str(), v2.GetX(), v2.GetY(), cfg->Get_Alpha());
+    dc->DrawRotatedText(s.str(), v.GetX(), v.GetY(), cfg->Get_Alpha());
 }
 
