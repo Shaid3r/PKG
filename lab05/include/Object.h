@@ -28,14 +28,14 @@ struct Segment {
 
 class Object {
 public:
-    Object(MyFrame1 *model, std::vector<Segment> data);
+    Object(MyFrame1 *model, std::vector<Segment> data) : data(std::move(data)),
+                                                         model(model) {}
 
     void Draw(wxDC &dc, int width, int height);
 
 private:
     std::vector<Segment> data;
     MyFrame1 *model;
-    float xmin, xmax, ymin, ymax;
 
     Matrix4 RotateMatrix(double phi_x, double phi_y, double phi_z) const;
 
@@ -43,9 +43,7 @@ private:
 
     Matrix4 TranslateMatrix(double tx, double ty, double tz) const;
 
-    Matrix4 fitWindowMatrix(double w, double h);
-
-    Matrix4 PerspectiveMatrix(double p, double width, double height) const;
+    Matrix4 fitWindowMatrix(double width, double height);
 };
 
 
